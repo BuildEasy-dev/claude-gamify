@@ -39,7 +39,7 @@ const macOSSystemSounds = {
  */
 function loadConfig() {
   const defaultConfig = {
-    sound_theme: 'system',
+    theme: 'system',
     sound_enabled: true,
     sound_volume: 0.5
   };
@@ -169,7 +169,7 @@ function main() {
     process.exit(0);
   }
   
-  const soundPath = findSoundPath(hookName, config.sound_theme);
+  const soundPath = findSoundPath(hookName, config.theme);
   
   if (soundPath) {
     playSound(soundPath, config.sound_volume);

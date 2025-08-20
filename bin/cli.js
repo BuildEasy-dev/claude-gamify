@@ -229,7 +229,7 @@ async function themesMenu(manager) {
     await manager.showQuickStatus();
     
     const themes = await manager.listThemes();
-    const currentTheme = manager.config.sound_theme;
+    const currentTheme = manager.config.theme;
 
     const choices = themes.map(theme => ({
       name: `${theme.name === currentTheme ? '✓' : ' '} ${theme.name} ${chalk.gray(`(${theme.description || 'No description'})`)}`,

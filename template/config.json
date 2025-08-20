@@ -1,5 +1,5 @@
 {
-  "sound_theme": "zelda",
+  "theme": "zelda",
   "sound_enabled": true,
   "sound_volume": 0.5
 }

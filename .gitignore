@@ -125,3 +125,5 @@ local-test/
 # Log files
 *.log
 logs/
+
+docs/

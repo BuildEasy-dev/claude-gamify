@@ -101,7 +101,7 @@ async function testInitialization() {
     // Test configuration loading
     if (manager.config) {
       console.log('✅ Configuration loaded successfully');
-      console.log(`   Theme: ${manager.config.sound_theme}`);
+      console.log(`   Theme: ${manager.config.theme}`);
       console.log(`   Enabled: ${manager.config.sound_enabled}`);
       console.log(`   Volume: ${(manager.config.sound_volume * 100).toFixed(0)}%`);
     } else {
