@@ -8,6 +8,7 @@
 const { program } = require('commander');
 const chalk = require('chalk');
 const boxen = require('boxen');
+const figlet = require('figlet');
 const inquirer = require('inquirer');
 const { ClaudeSound } = require('../lib/claude-sound');
 
@@ -95,8 +96,26 @@ async function promptWithEsc(promptConfig, backValue = 'back') {
 
 async function showWelcome() {
   console.clear();
+  
+  // Generate ASCII art
+  // Available font options: Standard, Big, Slant, Small, Script, Shadow, 
+  // Banner3-D, Doom, Ghost, Graceful, Graffiti, Larry 3D, Poison, Speed, 
+  // Stop, Thin, 3D-ASCII, 3D Diagonal, Alphabet, Banner, Banner3, Banner4,
+  // Bubble, Digital, Epic, Fire Font-s, Isometric1-4, Lean, Letters, 
+  // Merlin1, Modular, Ogre, Pagga, Rectangle, Roman, Rounded, Rowan Cap,
+  // Small Slant, Stellar, Univers, Weird
+  const asciiArt = figlet.textSync('Claude Gamify', {
+    font: 'Small',
+    horizontalLayout: 'default',
+    verticalLayout: 'default',
+    width: 60,
+    whitespaceBreak: true
+  });
+  
+  // Display everything in one boxen with matching colors
   console.log(
     boxen(
+      chalk.hex('#cc785c')(asciiArt) + '\n\n' +
       chalk.bold('Welcome to Claude Gamify!\n\n') +
       chalk.gray('Use arrow keys to navigate, Enter to select, ESC to go back'),
       {
@@ -104,7 +123,7 @@ async function showWelcome() {
         margin: 0,
         borderStyle: 'single',
         borderColor: '#cc785c',
-        textAlignment: 'left'
+        textAlignment: 'center'
       }
     )
   );
