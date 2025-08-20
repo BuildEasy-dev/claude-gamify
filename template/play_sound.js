@@ -70,13 +70,13 @@ function findSoundPath(hookName, currentTheme) {
     }
   }
   
-  // Priority 2: Default theme directory (cross-platform fallback)
-  const defaultDir = path.join(themesBase, 'default');
-  if (fs.existsSync(defaultDir)) {
+  // Priority 2: System theme directory (cross-platform fallback)
+  const systemDir = path.join(themesBase, 'system');
+  if (fs.existsSync(systemDir)) {
     for (const ext of extensions) {
-      const defaultPath = path.join(defaultDir, hookName + ext);
-      if (fs.existsSync(defaultPath)) {
-        return defaultPath;
+      const systemPath = path.join(systemDir, hookName + ext);
+      if (fs.existsSync(systemPath)) {
+        return systemPath;
       }
     }
   }

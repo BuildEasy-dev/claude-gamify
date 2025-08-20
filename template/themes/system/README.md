@@ -1,10 +1,10 @@
-# Default Theme
+# System Theme
 
 Cross-platform fallback sounds. Used when theme-specific sounds are not found.
 
 ## Use Cases
 
-- **Linux users**: Since Linux doesn't have macOS system sounds, place default sounds here
+- **Linux users**: Since Linux doesn't have macOS system sounds, place system sounds here
 - **Fallback**: Automatically used when custom themes are missing certain sounds
 
 ## File Naming Convention
@@ -24,7 +24,7 @@ Supported formats: `.wav`, `.mp3`, `.aiff`
 ## Priority Order
 
 1. Selected theme directory (e.g., `themes/zelda/`)
-2. Default theme directory (`themes/default/`)
+2. System theme directory (`themes/system/`)
 3. macOS system sounds (macOS only)
 
 ## Tips

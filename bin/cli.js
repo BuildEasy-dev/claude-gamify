@@ -273,7 +273,7 @@ async function themesMenu(manager) {
 
 async function removeThemeFlow(manager) {
   const themes = await manager.listThemes();
-  const removableThemes = themes.filter(t => t.name !== 'default' && t.name !== 'system');
+  const removableThemes = themes.filter(t => t.name !== 'system');
   
   if (removableThemes.length === 0) {
     console.log(chalk.yellow('No custom themes available to remove.'));

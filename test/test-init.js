@@ -76,8 +76,8 @@ async function testInitialization() {
       
       // Check for theme subdirectories
       const themes = fs.readdirSync(themesPath);
-      if (themes.includes('zelda') && themes.includes('default')) {
-        console.log('✅ default themes installed');
+      if (themes.includes('zelda') && themes.includes('system')) {
+        console.log('✅ system themes installed');
       } else {
         console.log(`❌ missing themes: ${themes.join(', ')}`);
         success = false;

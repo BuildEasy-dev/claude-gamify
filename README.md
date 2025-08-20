@@ -38,9 +38,7 @@ npx claude-gamify status    # Show current status
 ## 🎵 Available Themes
 
 - **Zelda** - The Legend of Zelda-inspired sound effects (default)
-- **Portal** - Portal game-inspired sounds and interface
-- **StarCraft** - StarCraft game-inspired audio experience
-- **Default** - Clean, minimal system sounds template
+- **System** - Clean, minimal system sounds template
 - More themes coming soon!
 
 ## 📋 Requirements
@@ -151,7 +149,7 @@ claude-gamify/
 │   ├── play_sound.js     # Zero-dependency player
 │   ├── config.json       # Default configuration
 │   └── themes/           # Sound themes
-│       ├── default/
+│       ├── system/
 │       └── zelda/
 └── test/                 # Tests
 ```
