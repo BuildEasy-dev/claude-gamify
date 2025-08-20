@@ -10,6 +10,7 @@ const chalk = require('chalk');
 const boxen = require('boxen');
 const figlet = require('figlet');
 const inquirer = require('inquirer');
+const ora = require('ora');
 const { ClaudeSound } = require('../lib/claude-sound');
 
 const VERSION = require('../package.json').version;
@@ -177,6 +178,8 @@ async function mainMenu() {
     { name: 'Settings', value: 'settings' },
     { name: 'Test Sounds', value: 'test' },
     { name: 'System Info', value: 'info' },
+    new inquirer.Separator(),
+    { name: 'Uninstall', value: 'uninstall' },
     { name: 'Exit', value: 'exit' }
   ];
 
@@ -205,6 +208,9 @@ async function mainMenu() {
           break;
         case 'info':
           await showSystemInfo(manager);
+          break;
+        case 'uninstall':
+          await uninstallFlow(manager);
           break;
         case 'exit':
           console.clear();
@@ -450,6 +456,88 @@ async function showSystemInfo(manager) {
   ]);
 }
 
+async function uninstallFlow(manager) {
+  console.clear();
+  
+  // Show warning box
+  console.log(
+    boxen(
+      chalk.red('⚠️  Uninstall Claude Gamify\n\n') +
+      chalk.yellow('This will remove ALL Claude Gamify files and settings:\n') +
+      chalk.gray('  • ~/.claude-gamify/ (all sound files & configuration)\n') +
+      chalk.gray('  • ~/.claude/output-styles/<theme>.md (theme styles)\n') + 
+      chalk.gray('  • Hook configurations from Claude Code settings\n') +
+      chalk.gray('  • Reset output style if using gamify theme'),
+      {
+        padding: 1,
+        margin: 0,
+        borderStyle: 'single',
+        borderColor: 'red'
+      }
+    )
+  );
+
+  // Confirmation prompt
+  const { confirmUninstall } = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'confirmUninstall',
+      message: chalk.green('Are you sure you want to completely uninstall Claude Gamify? (y/N)'),
+      default: 'N',
+      validate: (input) => {
+        const normalized = input.toLowerCase().trim();
+        if (['y', 'yes', 'n', 'no', ''].includes(normalized)) {
+          return true;
+        }
+        return 'Please enter y/yes or n/no';
+      }
+    }
+  ]);
+
+  if (!['y', 'yes'].includes(confirmUninstall.toLowerCase())) {
+    console.log(chalk.yellow('\n✨ Uninstall cancelled'));
+    await inquirer.prompt([
+      { type: 'input', name: 'continue', message: 'Press Enter to return to menu...' }
+    ]);
+    return;
+  }
+
+
+  // Execute uninstall
+  const spinner = ora('Uninstalling Claude Gamify...').start();
+  
+  try {
+    const result = await manager.uninstall();
+    
+    if (result.success) {
+      spinner.succeed('Claude Gamify has been completely uninstalled');
+      
+      
+      console.log(chalk.gray('\nRemoved:'));
+      console.log(chalk.gray(`  • ${result.removedHooks} hook configurations`));
+      console.log(chalk.gray(`  • ${result.removedStyles.length} output style files`));
+      console.log(chalk.gray('  • All local installation files'));
+      
+      console.log(chalk.blue('\n👋 Thank you for using Claude Gamify!'));
+      console.log(chalk.gray('You can reinstall anytime with: npx claude-gamify'));
+    } else {
+      spinner.warn('Uninstall completed with some errors');
+      
+      if (result.errors.length > 0) {
+        console.log(chalk.yellow('\n⚠️  Some operations failed:'));
+        result.errors.forEach(err => {
+          console.log(chalk.gray(`  • ${err}`));
+        });
+      }
+    }
+  } catch (error) {
+    spinner.fail(`Uninstall failed: ${error.message}`);
+  }
+  
+  // Exit after uninstall
+  process.exit(0);
+}
+
 // CLI Commands
 program
   .name('claude-gamify')
@@ -480,6 +568,59 @@ program
       await manager.showQuickStatus();
     } catch (error) {
       console.error(chalk.red(`Error: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('uninstall')
+  .description('Completely uninstall Claude Gamify')
+  .option('-y, --yes', 'Skip confirmation prompt')
+  .action(async (options) => {
+    const manager = new ClaudeSound();
+    
+    // Check if initialized
+    try {
+      await manager.initialize();
+    } catch (error) {
+      console.log(chalk.yellow('Claude Gamify is not installed.'));
+      process.exit(0);
+    }
+    
+    if (!options.yes) {
+      // Interactive confirmation
+      const { confirmUninstall } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'confirmUninstall',
+          message: 'Are you sure you want to completely uninstall Claude Gamify?',
+          default: false
+        }
+      ]);
+      
+      if (!confirmUninstall) {
+        console.log(chalk.yellow('Uninstall cancelled'));
+        process.exit(0);
+      }
+    }
+    
+    console.log('Uninstalling Claude Gamify...');
+    
+    try {
+      const result = await manager.uninstall();
+      
+      if (result.success) {
+        console.log(chalk.green('✅ Uninstalled successfully'));
+        
+        
+        console.log(chalk.gray(`Removed ${result.removedHooks} hooks and ${result.removedStyles.length} styles`));
+      } else {
+        console.log(chalk.yellow('⚠️  Uninstall had some errors:'));
+        result.errors.forEach(err => console.log(chalk.gray(`  • ${err}`)));
+        process.exit(1);
+      }
+    } catch (error) {
+      console.error(chalk.red(`Uninstall failed: ${error.message}`));
       process.exit(1);
     }
   });

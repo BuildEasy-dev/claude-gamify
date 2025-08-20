@@ -1,4 +1,4 @@
-# 克劳德传说 - 塞尔达主题音效包
+# The Legend of Zelda
 
 **版本**: 1.0  
 **主题**: The Legend of Zelda (Breath of the Wild)  
