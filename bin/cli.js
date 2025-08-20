@@ -12,8 +12,29 @@ const figlet = require('figlet');
 const inquirer = require('inquirer');
 const ora = require('ora');
 const { ClaudeSound } = require('../lib/claude-sound');
+const { VersionManager } = require('../lib/version-manager');
+const { UpgradePrompt } = require('../lib/upgrade-prompt');
 
 const VERSION = require('../package.json').version;
+
+// UI Constants  
+const BORDER_COLOR = '#cc785c';
+const ACCENT_COLOR = '#cc785c';
+
+// Base UI configuration
+const BASE_BOX_CONFIG = {
+  borderStyle: 'single',
+  borderColor: BORDER_COLOR,
+  padding: 1,
+  margin: 1
+};
+
+// Warning box configuration (for uninstall, etc.)
+const WARNING_BOX_CONFIG = {
+  ...BASE_BOX_CONFIG,
+  borderColor: 'red',
+  margin: 0
+};
 
 // Handle Ctrl+C gracefully
 process.on('SIGINT', () => {
@@ -116,22 +137,53 @@ async function showWelcome() {
   // Display everything in one boxen with matching colors
   console.log(
     boxen(
-      chalk.hex('#cc785c')(asciiArt) + '\n\n' +
+      chalk.hex(ACCENT_COLOR)(asciiArt) + '\n\n' +
       chalk.bold('Welcome to Claude Gamify!\n\n') +
       chalk.gray('Use arrow keys to navigate, Enter to select, ESC to go back'),
       {
-        padding: 1,
+        ...BASE_BOX_CONFIG,
         margin: 0,
-        borderStyle: 'single',
-        borderColor: '#cc785c',
         textAlignment: 'center'
       }
     )
   );
 }
 
+// Global upgrade prompt instance to maintain session state
+const upgradePrompt = new UpgradePrompt();
+
+async function checkForUpdatesAsync() {
+  // Run version check in background without blocking main flow
+  const versionManager = new VersionManager(VERSION);
+  try {
+    const updateInfo = await versionManager.checkForUpdates();
+    return updateInfo;
+  } catch (error) {
+    // Silently fail - version check should never block the main app
+    return null;
+  }
+}
+
+async function handleUpgradePrompt(updateInfo) {
+  if (!updateInfo) return;
+  
+  try {
+    const userChoice = await upgradePrompt.showUpgradeNotice(updateInfo);
+    
+    if (userChoice === 'show_methods') {
+      await upgradePrompt.showUpgradeMethods(updateInfo);
+    }
+    // For 'skip' and 'silent', we just continue normally
+  } catch (error) {
+    // Gracefully handle any prompt errors
+  }
+}
+
 async function mainMenu() {
   const manager = new ClaudeSound();
+  
+  // Start version check in parallel with initialization
+  const updateCheckPromise = checkForUpdatesAsync();
   
   try {
     await manager.initialize();
@@ -183,7 +235,20 @@ async function mainMenu() {
     { name: 'Exit', value: 'exit' }
   ];
 
+  // Handle upgrade prompt once before entering main loop
+  let hasShownUpgrade = false;
+
   while (true) {
+    // Check for updates on first iteration only
+    if (!hasShownUpgrade) {
+      try {
+        const updateInfo = await updateCheckPromise;
+        await handleUpgradePrompt(updateInfo);
+      } catch (error) {
+        // Silently ignore upgrade check errors
+      }
+      hasShownUpgrade = true;
+    }
     await showWelcome();
     await manager.showQuickStatus();
 
@@ -468,12 +533,7 @@ async function uninstallFlow(manager) {
       chalk.gray('  • ~/.claude/output-styles/<theme>.md (theme styles)\n') + 
       chalk.gray('  • Hook configurations from Claude Code settings\n') +
       chalk.gray('  • Reset output style if using gamify theme'),
-      {
-        padding: 1,
-        margin: 0,
-        borderStyle: 'single',
-        borderColor: 'red'
-      }
+      WARNING_BOX_CONFIG
     )
   );
 
@@ -567,6 +627,85 @@ program
       await manager.initialize();
       await manager.showQuickStatus();
     } catch (error) {
+      console.error(chalk.red(`Error: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
+// Check for updates command
+program
+  .command('check-updates')
+  .description('Check for available NPM package updates')
+  .action(async () => {
+    const versionManager = new VersionManager(VERSION);
+    const spinner = ora('Checking for updates...').start();
+    
+    try {
+      const updateInfo = await versionManager.checkForUpdates();
+      spinner.stop();
+      console.log(); // Add line break after spinner
+      
+      if (updateInfo) {
+        console.log(boxen(
+          `${chalk.yellow('Update Available!')}\n\n` +
+          `Current Version: ${chalk.red(updateInfo.currentVersion)}\n` +
+          `Latest Version: ${chalk.green(updateInfo.latestVersion)}\n` +
+          `Execution Context: ${updateInfo.executionContext}\n\n` +
+          chalk.blue('Use claude-gamify upgrade to view upgrade guide'),
+          {
+            ...BASE_BOX_CONFIG,
+            title: 'Claude Gamify Version Check',
+            titleAlignment: 'center'
+          }
+        ));
+      } else {
+        console.log(boxen(
+          `${chalk.green('You are using the latest version!')}\n\n` +
+          `Current Version: ${chalk.green(VERSION)}`,
+          {
+            ...BASE_BOX_CONFIG,
+            title: 'Claude Gamify Version Check',
+            titleAlignment: 'center'
+          }
+        ));
+      }
+    } catch (error) {
+      spinner.fail('Version check failed');
+      console.error(chalk.red(`Error: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
+// Upgrade guidance command
+program
+  .command('upgrade')
+  .description('Show upgrade guidance for the NPM package')
+  .action(async () => {
+    const versionManager = new VersionManager(VERSION);
+    const upgradePrompt = new UpgradePrompt();
+    const spinner = ora('Checking version info...').start();
+    
+    try {
+      const updateInfo = await versionManager.checkForUpdates();
+      spinner.stop();
+      console.log(); // Add line break after spinner
+      
+      if (updateInfo) {
+        await upgradePrompt.showUpgradeMethods(updateInfo);
+      } else {
+        console.log(boxen(
+          `${chalk.green('You are using the latest version!')}\n\n` +
+          `Current Version: ${chalk.green(VERSION)}\n\n` +
+          chalk.blue('No upgrade needed, you\'re already using the latest version.'),
+          {
+            ...BASE_BOX_CONFIG,
+            title: 'Claude Gamify Upgrade Check',
+            titleAlignment: 'center'
+          }
+        ));
+      }
+    } catch (error) {
+      spinner.fail('Upgrade check failed');
       console.error(chalk.red(`Error: ${error.message}`));
       process.exit(1);
     }
