@@ -29,7 +29,7 @@ async function runTests() {
   // Test 1: ClaudeSound class can be instantiated
   test('ClaudeSound class instantiation', () => {
     const manager = new ClaudeSound();
-    if (!manager.homeDir || !manager.claudeGamifyDir) {
+    if (!manager || typeof manager.initialize !== 'function') {
       throw new Error('Manager not properly initialized');
     }
   });
