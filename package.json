@@ -47,8 +47,10 @@
   },
   "scripts": {
     "test": "node test/test-basic.js",
-    "start": "node bin/cli.js",
-    "dev": "node bin/cli.js"
+    "run": "node bin/cli.js",
+    "link": "pnpm link --global",
+    "unlink": "pnpm unlink --global",
+    "publish": "npm publish"
   }
 }
 

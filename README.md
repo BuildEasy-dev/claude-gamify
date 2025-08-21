@@ -1,5 +1,12 @@
 # Claude Gamify 🎮
 
+[![npm version](https://badge.fury.io/js/claude-gamify.svg)](https://badge.fury.io/js/claude-gamify)
+[![npm downloads](https://img.shields.io/npm/dm/claude-gamify.svg)](https://www.npmjs.com/package/claude-gamify)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js version](https://img.shields.io/node/v/claude-gamify.svg)](https://nodejs.org)
+[![Claude Code](https://img.shields.io/badge/Claude-Code-blue.svg)](https://claude.ai/code)
+[![CLI Tool](https://img.shields.io/badge/CLI-Interactive-green.svg)](https://www.npmjs.com/package/claude-gamify)
+
 **Interactive NPX CLI for managing Claude Code gamification system**
 
 Transform your Claude Code experience with immersive sound effects and themes. Claude Gamify provides a beautiful, interactive command-line interface to manage your sound system, install themes, and configure settings.
