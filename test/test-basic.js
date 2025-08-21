@@ -4,10 +4,16 @@
  * Basic tests for claude-gamify NPX package
  */
 
-const { ClaudeSound } = require('../lib/claude-sound');
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
+import { ClaudeSound } from '../lib/claude-sound.js';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 async function runTests() {
   console.log('🧪 Running basic tests for claude-gamify...\n');
@@ -56,7 +62,7 @@ async function runTests() {
   
   // Test 4: Package.json has correct structure
   test('Package.json structure', () => {
-    const pkg = require('../package.json');
+    const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf8'));
     
     if (!pkg.name || pkg.name !== 'claude-gamify') {
       throw new Error('Package name incorrect');

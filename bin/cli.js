@@ -5,15 +5,42 @@
  * NPX tool for managing Claude Code gamification system
  */
 
-const { program } = require('commander');
-const chalk = require('chalk');
-const boxen = require('boxen');
-const figlet = require('figlet');
-const inquirer = require('inquirer');
-const ora = require('ora');
-const { ClaudeSound } = require('../lib/claude-sound');
+import { program } from 'commander';
+import chalk from 'chalk';
+import boxen from 'boxen';
+import figlet from 'figlet';
+import inquirer from 'inquirer';
+import ora from 'ora';
+import { ClaudeSound } from '../lib/claude-sound.js';
+import updateNotifier from 'update-notifier';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-const VERSION = require('../package.json').version;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf8'));
+
+const VERSION = pkg.version;
+
+// UI Constants  
+const BORDER_COLOR = '#cc785c';
+const ACCENT_COLOR = '#cc785c';
+
+// Base UI configuration
+const BASE_BOX_CONFIG = {
+  borderStyle: 'single',
+  borderColor: BORDER_COLOR,
+  padding: 1,
+  margin: 1
+};
+
+// Warning box configuration (for uninstall, etc.)
+const WARNING_BOX_CONFIG = {
+  ...BASE_BOX_CONFIG,
+  borderColor: 'red',
+  margin: 0
+};
 
 // Handle Ctrl+C gracefully
 process.on('SIGINT', () => {
@@ -95,7 +122,7 @@ async function promptWithEsc(promptConfig, backValue = 'back') {
   });
 }
 
-async function showWelcome() {
+async function showWelcome(updateInfo = null) {
   console.clear();
   
   // Generate ASCII art
@@ -113,25 +140,88 @@ async function showWelcome() {
     whitespaceBreak: true
   });
   
+  // Build welcome content
+  let welcomeContent = chalk.hex(ACCENT_COLOR)(asciiArt) + '\n\n' +
+    chalk.bold('Welcome to Claude Gamify!\n\n');
+  
+  // Add simple update notice if available
+  if (updateInfo) {
+    const contextHint = getExecutionContextHint(updateInfo.executionContext);
+    welcomeContent += chalk.yellow(`New version available: ${updateInfo.latestVersion} ${contextHint}\n\n`);
+  }
+  
+  welcomeContent += chalk.gray('Use arrow keys to navigate, Enter to select, ESC to go back');
+  
   // Display everything in one boxen with matching colors
   console.log(
     boxen(
-      chalk.hex('#cc785c')(asciiArt) + '\n\n' +
-      chalk.bold('Welcome to Claude Gamify!\n\n') +
-      chalk.gray('Use arrow keys to navigate, Enter to select, ESC to go back'),
+      welcomeContent,
       {
-        padding: 1,
+        ...BASE_BOX_CONFIG,
         margin: 0,
-        borderStyle: 'single',
-        borderColor: '#cc785c',
         textAlignment: 'center'
       }
     )
   );
 }
 
+function getExecutionContextHint(executionContext) {
+  switch (executionContext) {
+    case 'npx':
+      return '(run: npx claude-gamify@latest)';
+    case 'global':
+      return '(run: npm i -g claude-gamify@latest)';
+    case 'local':
+      return '(run: npm i claude-gamify@latest)';
+    default:
+      return '';
+  }
+}
+
+async function checkForUpdatesAsync() {
+  // Create notifier with custom configuration
+  const notifier = updateNotifier({
+    pkg,
+    updateCheckInterval: 1000 * 60 * 15, // Check every 15 minutes (like our old cache)
+    shouldNotifyInNpmScript: false, // Don't show during npm scripts
+    defer: false // Show updates immediately, don't defer
+  });
+  
+  // Check for updates and return formatted info if available
+  if (notifier.update) {
+    const executionContext = detectExecutionContext();
+    return {
+      currentVersion: notifier.update.current,
+      latestVersion: notifier.update.latest,
+      executionContext: executionContext,
+      updateAvailable: true
+    };
+  }
+  
+  return null;
+}
+
+// Detect execution context similar to our old VersionManager
+function detectExecutionContext() {
+  // NPX execution - check if npm_execpath contains 'npx'
+  if (process.env.npm_execpath && process.env.npm_execpath.includes('npx')) {
+    return 'npx';
+  }
+
+  // Global installation - check npm_config_global
+  if (process.env.npm_config_global === 'true') {
+    return 'global';
+  }
+
+  // Local installation - default case
+  return 'local';
+}
+
 async function mainMenu() {
   const manager = new ClaudeSound();
+  
+  // Start version check in parallel with initialization
+  const updateCheckPromise = checkForUpdatesAsync();
   
   try {
     await manager.initialize();
@@ -183,8 +273,16 @@ async function mainMenu() {
     { name: 'Exit', value: 'exit' }
   ];
 
+  // Get update info once at start
+  let updateInfo = null;
+  try {
+    updateInfo = await updateCheckPromise;
+  } catch (error) {
+    // Silently ignore upgrade check errors
+  }
+
   while (true) {
-    await showWelcome();
+    await showWelcome(updateInfo);
     await manager.showQuickStatus();
 
     const { action } = await promptWithEsc({
@@ -246,7 +344,8 @@ async function themesMenu(manager) {
     choices.push(
       new inquirer.Separator(),
       { name: 'Remove Theme', value: 'remove' },
-      { name: 'Back', value: 'back' }
+      { name: 'Back', value: 'back' },
+      { name: 'Exit', value: 'exit' }
     );
 
     const { choice } = await promptWithEsc({
@@ -259,6 +358,11 @@ async function themesMenu(manager) {
 
     if (choice === 'back') {
       return;
+    }
+    if (choice === 'exit') {
+      console.clear();
+      console.log(chalk.green('👋 Thanks for using Claude Gamify!'));
+      process.exit(0);
     }
     if (choice === 'remove') {
       await removeThemeFlow(manager);
@@ -291,13 +395,19 @@ async function removeThemeFlow(manager) {
     choices: [
       ...removableThemes.map(t => ({ name: t.name, value: t.name })),
       new inquirer.Separator(),
-      { name: 'Back', value: 'back' }
+      { name: 'Back', value: 'back' },
+      { name: 'Exit', value: 'exit' }
     ]
   }, 'back');
 
   if (themeToRemove === 'back') {
     console.clear();
     return;
+  }
+  if (themeToRemove === 'exit') {
+    console.clear();
+    console.log(chalk.green('👋 Thanks for using Claude Gamify!'));
+    process.exit(0);
   }
 
   const { confirmed } = await inquirer.prompt([
@@ -341,7 +451,8 @@ async function settingsMenu(manager) {
           value: 'toggle'
         },
         new inquirer.Separator(),
-        { name: 'Back', value: 'back' }
+        { name: 'Back', value: 'back' },
+        { name: 'Exit', value: 'exit' }
       ]
     }, 'back');
 
@@ -355,6 +466,10 @@ async function settingsMenu(manager) {
         break;
       case 'back':
         return;
+      case 'exit':
+        console.clear();
+        console.log(chalk.green('👋 Thanks for using Claude Gamify!'));
+        process.exit(0);
     }
   }
 }
@@ -382,7 +497,7 @@ async function adjustVolumeFlow(manager) {
   
   if (result.volume === 'cancel') return;
 
-  await manager.setVolume(parseInt(result.volume) / 100);
+  await manager.setVolume(parseInt(result.volume));
 
   // Play test sound
   await manager.testSingleSound('Notification');
@@ -409,7 +524,8 @@ async function testSounds(manager) {
       new inquirer.Separator(),
       ...hooks.map(hook => ({ name: hook, value: hook })),
       new inquirer.Separator(),
-      { name: 'Back', value: 'back' }
+      { name: 'Back', value: 'back' },
+      { name: 'Exit', value: 'exit' }
     ],
     loop: false
   }, 'back');
@@ -417,6 +533,11 @@ async function testSounds(manager) {
   if (choice === 'back') {
     console.clear();
     return;
+  }
+  if (choice === 'exit') {
+    console.clear();
+    console.log(chalk.green('👋 Thanks for using Claude Gamify!'));
+    process.exit(0);
   }
 
   if (choice === 'all') {
@@ -468,12 +589,7 @@ async function uninstallFlow(manager) {
       chalk.gray('  • ~/.claude/output-styles/<theme>.md (theme styles)\n') + 
       chalk.gray('  • Hook configurations from Claude Code settings\n') +
       chalk.gray('  • Reset output style if using gamify theme'),
-      {
-        padding: 1,
-        margin: 0,
-        borderStyle: 'single',
-        borderColor: 'red'
-      }
+      WARNING_BOX_CONFIG
     )
   );
 
@@ -571,6 +687,52 @@ program
       process.exit(1);
     }
   });
+
+// Check for updates command
+program
+  .command('check-updates')
+  .description('Check for available NPM package updates')
+  .action(async () => {
+    const spinner = ora('Checking for updates...').start();
+    
+    try {
+      const updateInfo = await checkForUpdatesAsync();
+      spinner.stop();
+      console.log(); // Add line break after spinner
+      
+      if (updateInfo) {
+        const { executionContext, latestVersion } = updateInfo;
+        const contextHint = getExecutionContextHint(executionContext);
+        
+        console.log(boxen(
+          `${chalk.yellow('Update Available!')}\n\n` +
+          `Current Version: ${chalk.red(updateInfo.currentVersion)}\n` +
+          `Latest Version: ${chalk.green(latestVersion)}\n\n` +
+          chalk.cyan(`Run: ${contextHint.replace(/[()]/g, '').replace('run: ', '')}`),
+          {
+            ...BASE_BOX_CONFIG,
+            title: 'Claude Gamify Version Check',
+            titleAlignment: 'center'
+          }
+        ));
+      } else {
+        console.log(boxen(
+          `${chalk.green('You are using the latest version!')}\n\n` +
+          `Current Version: ${chalk.green(VERSION)}`,
+          {
+            ...BASE_BOX_CONFIG,
+            title: 'Claude Gamify Version Check',
+            titleAlignment: 'center'
+          }
+        ));
+      }
+    } catch (error) {
+      spinner.fail('Version check failed');
+      console.error(chalk.red(`Error: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
 
 program
   .command('uninstall')

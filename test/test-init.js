@@ -4,10 +4,10 @@
  * Test initialization flow for claude-gamify
  */
 
-const { ClaudeSound } = require('../lib/claude-sound');
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
+import { ClaudeSound } from '../lib/claude-sound.js';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 
 async function testInitialization() {
   console.log('🧪 Testing claude-gamify initialization flow...\n');

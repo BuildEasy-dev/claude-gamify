@@ -1,16 +1,19 @@
 {
   "name": "claude-gamify",
   "version": "1.0.0",
-  "description": "Claude Code gamification system manager - Interactive CLI for managing sound themes and settings",
+  "type": "module",
+  "description": "Claude Code gamification - Interactive CLI for managing sound and output styles",
   "keywords": [
     "claude-code",
     "gamification",
     "sound",
+    "output-styles",
+    "interactive",
+    "cli-tool",
     "cli",
-    "productivity",
-    "themes"
+    "productivity"
   ],
-  "author": "BuildEasy Dev <dev@buildeasy.com>",
+  "author": "Kevin Ma",
   "license": "MIT",
   "homepage": "https://github.com/buildeasy-dev/claude-gamify#readme",
   "repository": {
@@ -30,16 +33,17 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=16.0.0"
   },
   "dependencies": {
-    "boxen": "^5.1.2",
-    "chalk": "^4.1.2",
-    "cli-table3": "^0.6.3",
-    "commander": "^11.1.0",
+    "boxen": "^7.1.1",
+    "chalk": "^5.3.0",
+    "cli-table3": "^0.6.5",
+    "commander": "^12.1.0",
     "figlet": "^1.8.2",
-    "inquirer": "^8.2.7",
-    "ora": "^5.4.1"
+    "inquirer": "^10.1.0",
+    "ora": "^8.0.1",
+    "update-notifier": "^7.0.0"
   },
   "scripts": {
     "test": "node test/test-basic.js",
@@ -47,3 +51,4 @@
     "dev": "node bin/cli.js"
   }
 }
+
