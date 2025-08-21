@@ -44,13 +44,5 @@
     "inquirer": "^10.1.0",
     "ora": "^8.0.1",
     "update-notifier": "^7.0.0"
-  },
-  "scripts": {
-    "test": "node test/test-basic.js",
-    "run": "node bin/cli.js",
-    "link": "pnpm link --global",
-    "unlink": "pnpm unlink --global",
-    "publish": "npm publish"
   }
 }
-
