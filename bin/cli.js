@@ -344,7 +344,8 @@ async function themesMenu(manager) {
     choices.push(
       new inquirer.Separator(),
       { name: 'Remove Theme', value: 'remove' },
-      { name: 'Back', value: 'back' }
+      { name: 'Back', value: 'back' },
+      { name: 'Exit', value: 'exit' }
     );
 
     const { choice } = await promptWithEsc({
@@ -357,6 +358,11 @@ async function themesMenu(manager) {
 
     if (choice === 'back') {
       return;
+    }
+    if (choice === 'exit') {
+      console.clear();
+      console.log(chalk.green('👋 Thanks for using Claude Gamify!'));
+      process.exit(0);
     }
     if (choice === 'remove') {
       await removeThemeFlow(manager);
@@ -389,13 +395,19 @@ async function removeThemeFlow(manager) {
     choices: [
       ...removableThemes.map(t => ({ name: t.name, value: t.name })),
       new inquirer.Separator(),
-      { name: 'Back', value: 'back' }
+      { name: 'Back', value: 'back' },
+      { name: 'Exit', value: 'exit' }
     ]
   }, 'back');
 
   if (themeToRemove === 'back') {
     console.clear();
     return;
+  }
+  if (themeToRemove === 'exit') {
+    console.clear();
+    console.log(chalk.green('👋 Thanks for using Claude Gamify!'));
+    process.exit(0);
   }
 
   const { confirmed } = await inquirer.prompt([
@@ -439,7 +451,8 @@ async function settingsMenu(manager) {
           value: 'toggle'
         },
         new inquirer.Separator(),
-        { name: 'Back', value: 'back' }
+        { name: 'Back', value: 'back' },
+        { name: 'Exit', value: 'exit' }
       ]
     }, 'back');
 
@@ -453,6 +466,10 @@ async function settingsMenu(manager) {
         break;
       case 'back':
         return;
+      case 'exit':
+        console.clear();
+        console.log(chalk.green('👋 Thanks for using Claude Gamify!'));
+        process.exit(0);
     }
   }
 }
@@ -507,7 +524,8 @@ async function testSounds(manager) {
       new inquirer.Separator(),
       ...hooks.map(hook => ({ name: hook, value: hook })),
       new inquirer.Separator(),
-      { name: 'Back', value: 'back' }
+      { name: 'Back', value: 'back' },
+      { name: 'Exit', value: 'exit' }
     ],
     loop: false
   }, 'back');
@@ -515,6 +533,11 @@ async function testSounds(manager) {
   if (choice === 'back') {
     console.clear();
     return;
+  }
+  if (choice === 'exit') {
+    console.clear();
+    console.log(chalk.green('👋 Thanks for using Claude Gamify!'));
+    process.exit(0);
   }
 
   if (choice === 'all') {
