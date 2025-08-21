@@ -157,7 +157,8 @@ async function mainMenu() {
 
   while (true) {
     await showWelcome(updateInfo);
-    StatusBar.render(manager.config);
+    const config = manager.configManager.getConfig();
+    StatusBar.render(config);
 
     const { action } = await PromptManager.promptWithEsc({
       type: 'list',
@@ -202,10 +203,11 @@ async function mainMenu() {
 async function themesMenu(manager) {
   while (true) {
     await showWelcome();
-    StatusBar.render(manager.config);
+    const config = manager.configManager.getConfig();
+    StatusBar.render(config);
     
     const themes = await manager.listThemes();
-    const currentTheme = manager.config.theme;
+    const currentTheme = config.theme;
 
     const choices = ThemeListDisplay.formatChoices(themes, currentTheme);
 
@@ -293,9 +295,8 @@ async function removeThemeFlow(manager) {
 async function settingsMenu(manager) {
   while (true) {
     await showWelcome();
-    StatusBar.render(manager.config);
-    
-    const config = manager.config;
+    const config = manager.configManager.getConfig();
+    StatusBar.render(config);
 
     const { setting } = await PromptManager.promptWithEsc({
       type: 'list',
@@ -338,7 +339,7 @@ async function adjustVolumeFlow(manager) {
   // Clear screen to avoid any leftover text
   MenuNavigator.clearScreen();
   
-  const volume = await PromptManager.inputVolume(manager.config.sound_volume);
+  const volume = await PromptManager.inputVolume(manager.configManager.getConfig().sound_volume);
   
   if (volume === 'cancel') return;
 
@@ -461,7 +462,8 @@ program
     const manager = new ClaudeSound();
     try {
       await manager.initialize();
-      StatusBar.render(manager.config);
+      const config = manager.configManager.getConfig();
+      StatusBar.render(config);
     } catch (error) {
       console.error(chalk.red(`Error: ${error.message}`));
       process.exit(1);
