@@ -73,13 +73,35 @@ template/                    →  ~/.claude-gamify/
         └── output-style.md →          └── output-style.md
 ```
 
-### Key Source Files
+### Modular Architecture
 
-- `bin/cli.js` - CLI entry point with interactive menu system using inquirer
-- `lib/claude-sound.js` - Core manager class handling configuration, themes, and Claude integration  
-- `lib/utils.js` - Shared utilities for paths, configuration, file operations, and system detection
-- `template/play_sound.js` - Zero-dependency sound player template (deployed to ~/.claude-gamify/)
-- `template/themes/` - Sound themes (deployed to ~/.claude-gamify/themes/)
+The codebase follows a layered, modular design achieved through recent refactoring:
+
+```
+lib/
+├── orchestrator.js          # Main coordinator - delegates to specialized managers
+├── core/                    # Business logic layer
+│   ├── config.js           # Configuration CRUD operations
+│   ├── themes.js           # Theme installation and management
+│   ├── hooks.js            # Claude Code integration
+│   ├── styles.js           # Output style management
+│   └── player.js           # Audio playback functionality
+├── cli/                     # Command line interface layer  
+│   ├── commands.js         # CLI command implementations
+│   ├── session.js          # Interactive session management
+│   └── menus.js            # Menu navigation logic
+├── ui/                      # User interface components
+│   ├── components.js       # Reusable display components
+│   ├── constants.js        # UI styling and configuration
+│   └── prompts.js          # Interactive prompt utilities
+└── utils.js                 # Shared utilities and system detection
+```
+
+**Key Principles:**
+- **Single Responsibility**: Each module handles one clear concern
+- **Dependency Injection**: Managers are composed in orchestrator.js
+- **Layer Separation**: CLI → Core Services → File System
+- **Facade Pattern**: orchestrator.js provides unified API
 
 ### Hook Events
 
@@ -104,7 +126,7 @@ The CLI uses:
 - **boxen** for styled boxes (use `borderStyle: 'single'` not 'rounded')
 - **figlet** for ASCII art
 
-Menu navigation includes ESC key handling via custom `promptWithEsc()` wrapper function in bin/cli.js:29-95.
+Menu navigation includes ESC key handling via custom `promptWithEsc()` wrapper function in lib/ui/prompts.js.
 
 ## Platform Considerations
 
@@ -133,7 +155,7 @@ This project uses **PNPM** as the package manager. Key benefits:
 
 ## Important Patterns
 
-1. **Error Handling**: Check for NOT_INITIALIZED state and prompt for setup (lib/claude-sound.js:31-36)
+1. **Error Handling**: Check for NOT_INITIALIZED state and prompt for setup (lib/orchestrator.js:28-34)
 2. **Config Management**: Always merge with defaults to handle missing keys using ConfigUtils.mergeWithDefaults()
 3. **File Deployment**: Copy from `template/` directory to `~/.claude-gamify/` during initialization
 4. **Hook Integration**: Modify Claude's settings.json carefully, preserving existing hooks
@@ -141,7 +163,9 @@ This project uses **PNPM** as the package manager. Key benefits:
 6. **Theme Management**: Themes are directories in `~/.claude-gamify/themes/` containing WAV files for each hook event
 7. **Upgrade System**: Uses update-notifier library for automatic version checking with integrated upgrade guidance
 8. **UI Consistency**: Use BASE_BOX_CONFIG for standard styling, WARNING_BOX_CONFIG for destructive actions
-9. **ESC Key Handling**: All interactive menus support ESC key via promptWithEsc() wrapper (bin/cli.js:29-95)
+9. **ESC Key Handling**: All interactive menus support ESC key via promptWithEsc() wrapper (lib/ui/prompts.js)
+10. **Modular Design**: Use dependency injection pattern - managers are injected into orchestrator constructor
+11. **CLI Delegation**: bin/cli.js is a thin entry point that delegates to lib/cli/ modules
 
 ## Git Standards
 
