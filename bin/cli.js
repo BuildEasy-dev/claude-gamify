@@ -12,8 +12,8 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 // Import CLI modules
-import { CommandHandlers } from '../lib/cli/command-handlers.js';
-import { InteractiveMode } from '../lib/cli/interactive-mode.js';
+import { CommandHandlers } from '../lib/cli/commands.js';
+import { InteractiveMode } from '../lib/cli/session.js';
 import { MenuNavigator } from '../lib/ui/prompts.js';
 import { MESSAGES, COMMAND_DESCRIPTIONS } from '../lib/ui/constants.js';
 
