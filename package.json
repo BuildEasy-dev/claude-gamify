@@ -2,16 +2,18 @@
   "name": "claude-gamify",
   "version": "1.0.0",
   "type": "module",
-  "description": "Claude Code gamification system manager - Interactive CLI for managing sound themes and settings",
+  "description": "Claude Code gamification - Interactive CLI for managing sound and output styles",
   "keywords": [
     "claude-code",
     "gamification",
     "sound",
+    "output-styles",
+    "interactive",
+    "cli-tool",
     "cli",
-    "productivity",
-    "themes"
+    "productivity"
   ],
-  "author": "BuildEasy Dev <dev@buildeasy.com>",
+  "author": "Kevin Ma",
   "license": "MIT",
   "homepage": "https://github.com/buildeasy-dev/claude-gamify#readme",
   "repository": {
@@ -49,3 +51,4 @@
     "dev": "node bin/cli.js"
   }
 }
+
