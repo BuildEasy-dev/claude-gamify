@@ -1,6 +1,6 @@
 {
   "name": "claude-gamify",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "Claude Code gamification - Interactive CLI for managing sound and output styles",
   "keywords": [
