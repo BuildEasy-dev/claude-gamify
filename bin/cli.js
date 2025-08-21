@@ -707,9 +707,8 @@ program
         console.log(boxen(
           `${chalk.yellow('Update Available!')}\n\n` +
           `Current Version: ${chalk.red(updateInfo.currentVersion)}\n` +
-          `Latest Version: ${chalk.green(latestVersion)}\n` +
-          `Execution Context: ${updateInfo.executionContext}\n\n` +
-          chalk.cyan(`Upgrade command: ${contextHint.replace(/[()]/g, '')}`),
+          `Latest Version: ${chalk.green(latestVersion)}\n\n` +
+          chalk.cyan(`Run: ${contextHint.replace(/[()]/g, '').replace('run: ', '')}`),
           {
             ...BASE_BOX_CONFIG,
             title: 'Claude Gamify Version Check',
