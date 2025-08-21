@@ -701,12 +701,15 @@ program
       console.log(); // Add line break after spinner
       
       if (updateInfo) {
+        const { executionContext, latestVersion } = updateInfo;
+        const contextHint = getExecutionContextHint(executionContext);
+        
         console.log(boxen(
           `${chalk.yellow('Update Available!')}\n\n` +
           `Current Version: ${chalk.red(updateInfo.currentVersion)}\n` +
-          `Latest Version: ${chalk.green(updateInfo.latestVersion)}\n` +
+          `Latest Version: ${chalk.green(latestVersion)}\n` +
           `Execution Context: ${updateInfo.executionContext}\n\n` +
-          chalk.blue('Use claude-gamify upgrade to view upgrade guide'),
+          chalk.cyan(`Upgrade command: ${contextHint.replace(/[()]/g, '')}`),
           {
             ...BASE_BOX_CONFIG,
             title: 'Claude Gamify Version Check',
@@ -731,51 +734,6 @@ program
     }
   });
 
-// Upgrade guidance command
-program
-  .command('upgrade')
-  .description('Show upgrade guidance for the NPM package')
-  .action(async () => {
-    const spinner = ora('Checking version info...').start();
-    
-    try {
-      const updateInfo = await checkForUpdatesAsync();
-      spinner.stop();
-      console.log(); // Add line break after spinner
-      
-      if (updateInfo) {
-        const { executionContext, latestVersion } = updateInfo;
-        const contextHint = getExecutionContextHint(executionContext);
-        
-        console.log(boxen(
-          `${chalk.yellow('New Version Available!')}\n\n` +
-          `Current Version: ${chalk.red(VERSION)}\n` +
-          `Latest Version: ${chalk.green(latestVersion)}\n\n` +
-          chalk.cyan(`Upgrade command: ${contextHint.replace(/[()]/g, '')}`),
-          {
-            ...BASE_BOX_CONFIG,
-            title: 'Claude Gamify Upgrade Check',
-            titleAlignment: 'center'
-          }
-        ));
-      } else {
-        console.log(boxen(
-          `${chalk.green('You are using the latest version!')}\n\n` +
-          `Current Version: ${chalk.green(VERSION)}\n\n` +
-          chalk.blue('No upgrade needed, you\'re already using the latest version.'),
-          {
-            ...BASE_BOX_CONFIG,
-            title: 'Claude Gamify Upgrade Check',
-            titleAlignment: 'center'
-          }
-        ));
-      }
-    } catch (error) {
-      spinner.fail('Upgrade check failed');
-      console.error(chalk.red(`Error: ${error.message}`));
-      process.exit(1);
-    }
-  });
 
 program
   .command('uninstall')
