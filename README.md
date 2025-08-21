@@ -9,18 +9,15 @@
 
 **Interactive NPX CLI for managing Claude Code gamification system**
 
-Transform your Claude Code experience with immersive sound effects and themes. Claude Gamify provides a beautiful, interactive command-line interface to manage your sound system, install themes, and configure settings.
+Transform your Claude Code experience into an immersive adventure through dual-layer gamification: epic sound effects that celebrate your coding victories, and themed response styles that turn every debugging session into a heroic quest.
 
-## ✨ Features
+## Features
 
-- 🎵 **Theme Management** - Switch between different sound themes (Zelda, etc.)
+- 🎵 **Theme Management** - Switch between different gaming themes with unique sounds and response styles (Zelda, etc.)
 - ⚙️ **Settings Control** - Adjust volume, toggle sounds on/off
 - 🔊 **Sound Testing** - Test individual sounds or complete theme sets
-- 📊 **System Info** - View configuration and system compatibility
-- 🚀 **One-Click Setup** - Automatic initialization and Claude Code integration
-- 🎨 **Beautiful Interface** - Modern CLI with colors, progress bars, and intuitive menus
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation & Setup
 
@@ -42,13 +39,13 @@ npx claude-gamify init      # Reinitialize system
 npx claude-gamify status    # Show current status
 ```
 
-## 🎵 Available Themes
+## Available Themes
 
 - **Zelda** - The Legend of Zelda-inspired sound effects (default)
 - **System** - Clean, minimal system sounds template
 - More themes coming soon!
 
-## 📋 Requirements
+## Requirements
 
 - **Node.js** 14.0.0 or higher
 - **Claude Code** with hooks support
@@ -56,7 +53,7 @@ npx claude-gamify status    # Show current status
   - **macOS**: Built-in (uses `afplay`)
   - **Linux**: PulseAudio, ALSA, or SoX
 
-## 🔧 How It Works
+## How It Works
 
 Claude Gamify uses a **separated architecture**:
 
@@ -83,7 +80,7 @@ Claude Gamify uses a **separated architecture**:
 └─────────────────────┘
 ```
 
-## 🎛️ Configuration
+## Configuration
 
 Configuration is stored in `~/.claude-gamify/config.json`:
 
@@ -95,7 +92,7 @@ Configuration is stored in `~/.claude-gamify/config.json`:
 }
 ```
 
-## 🎯 Supported Sound Events
+## Supported Sound Events
 
 - **SessionStart** - When Claude Code starts
 - **UserPromptSubmit** - When you send a message
@@ -105,7 +102,7 @@ Configuration is stored in `~/.claude-gamify/config.json`:
 - **Stop** - When Claude finishes responding
 - **SubagentStop** - When a subtask completes
 
-## 🛠️ Advanced Usage
+## Advanced Usage
 
 ### Manual Theme Installation
 
@@ -130,7 +127,7 @@ npx claude-gamify
 # → Test Sounds
 ```
 
-## 🔊 Linux Audio Setup
+## Linux Audio Setup
 
 If you're on Linux and sounds aren't working, install audio players:
 
@@ -145,7 +142,7 @@ sudo yum install alsa-utils pulseaudio-utils mpg123 sox
 sudo pacman -S alsa-utils pulseaudio mpg123 sox
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 claude-gamify/
@@ -161,7 +158,7 @@ claude-gamify/
 └── test/                 # Tests
 ```
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -169,11 +166,11 @@ claude-gamify/
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
+## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
-## 🙏 Credits
+## Credits
 
 - Sound effects inspired by classic video games
 - Built for the Claude Code community
