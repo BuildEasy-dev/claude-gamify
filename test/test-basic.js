@@ -4,7 +4,7 @@
  * Basic tests for claude-gamify NPX package
  */
 
-import { ClaudeSound } from '../lib/claude-sound.js';
+import { ClaudeSound } from '../lib/orchestrator.js';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';

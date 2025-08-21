@@ -4,7 +4,8 @@
  * Test initialization flow for claude-gamify
  */
 
-import { ClaudeSound } from '../lib/claude-sound.js';
+import { ClaudeSound } from '../lib/orchestrator.js';
+import { Paths } from '../lib/utils.js';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
@@ -12,22 +13,25 @@ import os from 'os';
 async function testInitialization() {
   console.log('🧪 Testing claude-gamify initialization flow...\n');
   
-  const testDir = path.join(os.homedir(), '.claude-gamify-test');
   const manager = new ClaudeSound();
   
-  // Override paths for testing
-  manager.claudeGamifyDir = testDir;
-  manager.configFile = path.join(testDir, 'config.json');
-  manager.themesDir = path.join(testDir, 'themes');
-  manager.playerPath = path.join(testDir, 'play_sound.js');
-  manager.indexPath = path.join(testDir, 'index.js');
+  // Note: Testing uses the standard ~/.claude-gamify directory
+  // We'll backup and restore if it exists to avoid interfering with real installation
+  const backupDir = path.join(os.homedir(), '.claude-gamify-backup-test');
+  const gamifyDir = Paths.claudeGamifyDir;
+  let hadExistingInstall = false;
   
   let success = true;
   
   try {
-    // Clean up any existing test directory
-    if (fs.existsSync(testDir)) {
-      fs.rmSync(testDir, { recursive: true, force: true });
+    // Backup existing installation if present
+    if (fs.existsSync(gamifyDir)) {
+      hadExistingInstall = true;
+      if (fs.existsSync(backupDir)) {
+        fs.rmSync(backupDir, { recursive: true, force: true });
+      }
+      fs.renameSync(gamifyDir, backupDir);
+      console.log('💾 Backed up existing installation');
     }
     
     console.log('1. Testing fresh initialization...');
@@ -60,7 +64,7 @@ async function testInitialization() {
     ];
     
     for (const file of requiredFiles) {
-      const filePath = path.join(testDir, file);
+      const filePath = path.join(gamifyDir, file);
       if (fs.existsSync(filePath)) {
         console.log(`✅ ${file} created successfully`);
       } else {
@@ -70,7 +74,7 @@ async function testInitialization() {
     }
     
     // Check if themes directory was created
-    const themesPath = path.join(testDir, 'themes');
+    const themesPath = path.join(gamifyDir, 'themes');
     if (fs.existsSync(themesPath)) {
       console.log('✅ themes directory created');
       
@@ -99,11 +103,12 @@ async function testInitialization() {
     }
     
     // Test configuration loading
-    if (manager.config) {
+    const config = manager.configManager.getConfig();
+    if (config) {
       console.log('✅ Configuration loaded successfully');
-      console.log(`   Theme: ${manager.config.theme}`);
-      console.log(`   Enabled: ${manager.config.sound_enabled}`);
-      console.log(`   Volume: ${(manager.config.sound_volume * 100).toFixed(0)}%`);
+      console.log(`   Theme: ${config.theme}`);
+      console.log(`   Enabled: ${config.sound_enabled}`);
+      console.log(`   Volume: ${(config.sound_volume * 100).toFixed(0)}%`);
     } else {
       console.log('❌ Configuration not loaded');
       success = false;
@@ -122,10 +127,16 @@ async function testInitialization() {
     console.log(`❌ Test failed with error: ${error.message}`);
     success = false;
   } finally {
-    // Clean up test directory
-    if (fs.existsSync(testDir)) {
-      fs.rmSync(testDir, { recursive: true, force: true });
-      console.log('🧹 Cleaned up test directory');
+    // Clean up test files and restore backup if needed
+    if (fs.existsSync(gamifyDir)) {
+      fs.rmSync(gamifyDir, { recursive: true, force: true });
+      console.log('🧹 Cleaned up test installation');
+    }
+    
+    // Restore original installation if it existed
+    if (hadExistingInstall && fs.existsSync(backupDir)) {
+      fs.renameSync(backupDir, gamifyDir);
+      console.log('🔄 Restored original installation');
     }
   }
   
