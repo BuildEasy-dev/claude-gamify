@@ -147,14 +147,16 @@ sudo pacman -S alsa-utils pulseaudio mpg123 sox
 ```
 claude-gamify/
 ├── package.json           # NPX package configuration
-├── bin/cli.js            # CLI entry point
-├── lib/claude-sound.js   # Core manager class
+├── bin/                  # CLI entry point
+├── lib/                  # Modular architecture
+│   ├── orchestrator.js   # Main coordinator
+│   ├── cli/              # CLI interface layer
+│   ├── core/             # Business logic
+│   └── ui/               # User interface components
 ├── template/             # Deployment templates
 │   ├── play_sound.js     # Zero-dependency player
 │   ├── config.json       # Default configuration
 │   └── themes/           # Sound themes
-│       ├── system/
-│       └── zelda/
 └── test/                 # Tests
 ```
 
