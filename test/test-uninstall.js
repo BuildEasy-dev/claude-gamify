@@ -5,8 +5,9 @@
  * Tests the uninstall methods without actually running them
  */
 
-const { ClaudeSound } = require('../lib/claude-sound');
-const chalk = require('chalk');
+import { ClaudeSound } from '../lib/claude-sound.js';
+import chalk from 'chalk';
+import fs from 'fs';
 
 async function testUninstallMethods() {
   console.log(chalk.blue('🧪 Testing Uninstall Functionality\n'));
@@ -51,24 +52,24 @@ async function testUninstallMethods() {
   totalTests++;
   try {
     // Mock the file system operations to test structure without side effects
-    const originalRM = require('fs').promises.rm;
-    const originalWriteFile = require('fs').promises.writeFile;
-    const originalReadFile = require('fs').promises.readFile;
-    const originalUnlink = require('fs').promises.unlink;
+    const originalRM = fs.promises.rm;
+    const originalWriteFile = fs.promises.writeFile;
+    const originalReadFile = fs.promises.readFile;
+    const originalUnlink = fs.promises.unlink;
     
     // Create non-destructive mocks
-    require('fs').promises.rm = async () => { throw new Error('Mock: would delete directory'); };
-    require('fs').promises.writeFile = async () => { throw new Error('Mock: would write file'); };
-    require('fs').promises.readFile = async () => { throw new Error('Mock: config not found'); };
-    require('fs').promises.unlink = async () => { throw new Error('Mock: would delete file'); };
+    fs.promises.rm = async () => { throw new Error('Mock: would delete directory'); };
+    fs.promises.writeFile = async () => { throw new Error('Mock: would write file'); };
+    fs.promises.readFile = async () => { throw new Error('Mock: config not found'); };
+    fs.promises.unlink = async () => { throw new Error('Mock: would delete file'); };
     
     const result = await manager.uninstall({ backup: false });
     
     // Restore original methods
-    require('fs').promises.rm = originalRM;
-    require('fs').promises.writeFile = originalWriteFile;
-    require('fs').promises.readFile = originalReadFile;
-    require('fs').promises.unlink = originalUnlink;
+    fs.promises.rm = originalRM;
+    fs.promises.writeFile = originalWriteFile;
+    fs.promises.readFile = originalReadFile;
+    fs.promises.unlink = originalUnlink;
     
     if (result && typeof result === 'object' && 
         result.hasOwnProperty('success') && 

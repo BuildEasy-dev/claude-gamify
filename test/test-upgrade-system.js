@@ -5,11 +5,18 @@
  * Tests version detection, prompt display, and command functionality
  */
 
-const { VersionManager } = require('../lib/version-manager');
-const { UpgradePrompt } = require('../lib/upgrade-prompt');
-const chalk = require('chalk');
+import { VersionManager } from '../lib/version-manager.js';
+import { UpgradePrompt } from '../lib/upgrade-prompt.js';
+import chalk from 'chalk';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-const VERSION = require('../package.json').version;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf8'));
+
+const VERSION = pkg.version;
 
 async function testVersionManager() {
   console.log(chalk.blue('\nTesting VersionManager...\n'));
@@ -135,6 +142,6 @@ async function runAllTests() {
 }
 
 // Run tests if this script is executed directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   runAllTests();
 }

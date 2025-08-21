@@ -5,16 +5,23 @@
  * NPX tool for managing Claude Code gamification system
  */
 
-const { program } = require('commander');
-const chalk = require('chalk');
-const boxen = require('boxen');
-const figlet = require('figlet');
-const inquirer = require('inquirer');
-const ora = require('ora');
-const { ClaudeSound } = require('../lib/claude-sound');
-const { VersionManager } = require('../lib/version-manager');
+import { program } from 'commander';
+import chalk from 'chalk';
+import boxen from 'boxen';
+import figlet from 'figlet';
+import inquirer from 'inquirer';
+import ora from 'ora';
+import { ClaudeSound } from '../lib/claude-sound.js';
+import updateNotifier from 'update-notifier';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-const VERSION = require('../package.json').version;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const pkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf8'));
+
+const VERSION = pkg.version;
 
 // UI Constants  
 const BORDER_COLOR = '#cc785c';
@@ -172,15 +179,42 @@ function getExecutionContextHint(executionContext) {
 }
 
 async function checkForUpdatesAsync() {
-  // Run version check in background without blocking main flow
-  const versionManager = new VersionManager(VERSION);
-  try {
-    const updateInfo = await versionManager.checkForUpdates();
-    return updateInfo;
-  } catch (error) {
-    // Silently fail - version check should never block the main app
-    return null;
+  // Create notifier with custom configuration
+  const notifier = updateNotifier({
+    pkg,
+    updateCheckInterval: 1000 * 60 * 15, // Check every 15 minutes (like our old cache)
+    shouldNotifyInNpmScript: false, // Don't show during npm scripts
+    defer: false // Show updates immediately, don't defer
+  });
+  
+  // Check for updates and return formatted info if available
+  if (notifier.update) {
+    const executionContext = detectExecutionContext();
+    return {
+      currentVersion: notifier.update.current,
+      latestVersion: notifier.update.latest,
+      executionContext: executionContext,
+      updateAvailable: true
+    };
   }
+  
+  return null;
+}
+
+// Detect execution context similar to our old VersionManager
+function detectExecutionContext() {
+  // NPX execution - check if npm_execpath contains 'npx'
+  if (process.env.npm_execpath && process.env.npm_execpath.includes('npx')) {
+    return 'npx';
+  }
+
+  // Global installation - check npm_config_global
+  if (process.env.npm_config_global === 'true') {
+    return 'global';
+  }
+
+  // Local installation - default case
+  return 'local';
 }
 
 async function mainMenu() {
@@ -636,11 +670,10 @@ program
   .command('check-updates')
   .description('Check for available NPM package updates')
   .action(async () => {
-    const versionManager = new VersionManager(VERSION);
     const spinner = ora('Checking for updates...').start();
     
     try {
-      const updateInfo = await versionManager.checkForUpdates();
+      const updateInfo = await checkForUpdatesAsync();
       spinner.stop();
       console.log(); // Add line break after spinner
       
@@ -680,11 +713,10 @@ program
   .command('upgrade')
   .description('Show upgrade guidance for the NPM package')
   .action(async () => {
-    const versionManager = new VersionManager(VERSION);
     const spinner = ora('Checking version info...').start();
     
     try {
-      const updateInfo = await versionManager.checkForUpdates();
+      const updateInfo = await checkForUpdatesAsync();
       spinner.stop();
       console.log(); // Add line break after spinner
       
