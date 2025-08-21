@@ -13,7 +13,6 @@ const inquirer = require('inquirer');
 const ora = require('ora');
 const { ClaudeSound } = require('../lib/claude-sound');
 const { VersionManager } = require('../lib/version-manager');
-const { UpgradePrompt } = require('../lib/upgrade-prompt');
 
 const VERSION = require('../package.json').version;
 
@@ -116,7 +115,7 @@ async function promptWithEsc(promptConfig, backValue = 'back') {
   });
 }
 
-async function showWelcome() {
+async function showWelcome(updateInfo = null) {
   console.clear();
   
   // Generate ASCII art
@@ -134,12 +133,22 @@ async function showWelcome() {
     whitespaceBreak: true
   });
   
+  // Build welcome content
+  let welcomeContent = chalk.hex(ACCENT_COLOR)(asciiArt) + '\n\n' +
+    chalk.bold('Welcome to Claude Gamify!\n\n');
+  
+  // Add simple update notice if available
+  if (updateInfo) {
+    const contextHint = getExecutionContextHint(updateInfo.executionContext);
+    welcomeContent += chalk.yellow(`New version available: ${updateInfo.latestVersion} ${contextHint}\n\n`);
+  }
+  
+  welcomeContent += chalk.gray('Use arrow keys to navigate, Enter to select, ESC to go back');
+  
   // Display everything in one boxen with matching colors
   console.log(
     boxen(
-      chalk.hex(ACCENT_COLOR)(asciiArt) + '\n\n' +
-      chalk.bold('Welcome to Claude Gamify!\n\n') +
-      chalk.gray('Use arrow keys to navigate, Enter to select, ESC to go back'),
+      welcomeContent,
       {
         ...BASE_BOX_CONFIG,
         margin: 0,
@@ -149,8 +158,18 @@ async function showWelcome() {
   );
 }
 
-// Global upgrade prompt instance to maintain session state
-const upgradePrompt = new UpgradePrompt();
+function getExecutionContextHint(executionContext) {
+  switch (executionContext) {
+    case 'npx':
+      return '(run: npx claude-gamify@latest)';
+    case 'global':
+      return '(run: npm i -g claude-gamify@latest)';
+    case 'local':
+      return '(run: npm i claude-gamify@latest)';
+    default:
+      return '';
+  }
+}
 
 async function checkForUpdatesAsync() {
   // Run version check in background without blocking main flow
@@ -161,21 +180,6 @@ async function checkForUpdatesAsync() {
   } catch (error) {
     // Silently fail - version check should never block the main app
     return null;
-  }
-}
-
-async function handleUpgradePrompt(updateInfo) {
-  if (!updateInfo) return;
-  
-  try {
-    const userChoice = await upgradePrompt.showUpgradeNotice(updateInfo);
-    
-    if (userChoice === 'show_methods') {
-      await upgradePrompt.showUpgradeMethods(updateInfo);
-    }
-    // For 'skip' and 'silent', we just continue normally
-  } catch (error) {
-    // Gracefully handle any prompt errors
   }
 }
 
@@ -235,21 +239,16 @@ async function mainMenu() {
     { name: 'Exit', value: 'exit' }
   ];
 
-  // Handle upgrade prompt once before entering main loop
-  let hasShownUpgrade = false;
+  // Get update info once at start
+  let updateInfo = null;
+  try {
+    updateInfo = await updateCheckPromise;
+  } catch (error) {
+    // Silently ignore upgrade check errors
+  }
 
   while (true) {
-    // Check for updates on first iteration only
-    if (!hasShownUpgrade) {
-      try {
-        const updateInfo = await updateCheckPromise;
-        await handleUpgradePrompt(updateInfo);
-      } catch (error) {
-        // Silently ignore upgrade check errors
-      }
-      hasShownUpgrade = true;
-    }
-    await showWelcome();
+    await showWelcome(updateInfo);
     await manager.showQuickStatus();
 
     const { action } = await promptWithEsc({
@@ -682,7 +681,6 @@ program
   .description('Show upgrade guidance for the NPM package')
   .action(async () => {
     const versionManager = new VersionManager(VERSION);
-    const upgradePrompt = new UpgradePrompt();
     const spinner = ora('Checking version info...').start();
     
     try {
@@ -691,7 +689,20 @@ program
       console.log(); // Add line break after spinner
       
       if (updateInfo) {
-        await upgradePrompt.showUpgradeMethods(updateInfo);
+        const { executionContext, latestVersion } = updateInfo;
+        const contextHint = getExecutionContextHint(executionContext);
+        
+        console.log(boxen(
+          `${chalk.yellow('New Version Available!')}\n\n` +
+          `Current Version: ${chalk.red(VERSION)}\n` +
+          `Latest Version: ${chalk.green(latestVersion)}\n\n` +
+          chalk.cyan(`Upgrade command: ${contextHint.replace(/[()]/g, '')}`),
+          {
+            ...BASE_BOX_CONFIG,
+            title: 'Claude Gamify Upgrade Check',
+            titleAlignment: 'center'
+          }
+        ));
       } else {
         console.log(boxen(
           `${chalk.green('You are using the latest version!')}\n\n` +
