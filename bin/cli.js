@@ -480,7 +480,7 @@ async function adjustVolumeFlow(manager) {
   
   if (result.volume === 'cancel') return;
 
-  await manager.setVolume(parseInt(result.volume) / 100);
+  await manager.setVolume(parseInt(result.volume));
 
   // Play test sound
   await manager.testSingleSound('Notification');
