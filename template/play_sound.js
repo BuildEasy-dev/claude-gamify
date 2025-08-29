@@ -17,22 +17,10 @@ const hookName = process.argv[2];
 const homeDir = os.homedir();
 const configFile = path.join(homeDir, '.claude-gamify', 'config.json');
 const themesBase = path.join(homeDir, '.claude-gamify', 'themes');
-const systemSounds = '/System/Library/Sounds';
 
 // Platform detection
 const isMacOS = process.platform === 'darwin';
 const isLinux = process.platform === 'linux';
-
-// macOS system sound mappings (fallback when theme sounds not found)
-const macOSSystemSounds = {
-  SessionStart: 'Hero.aiff',
-  UserPromptSubmit: 'Pop.aiff', 
-  PreToolUse: 'Tink.aiff',
-  PostToolUse: 'Glass.aiff',
-  Notification: 'Ping.aiff',
-  Stop: 'Funk.aiff',
-  SubagentStop: 'Glass.aiff'
-};
 
 /**
  * Load configuration from JSON file
@@ -59,7 +47,7 @@ function loadConfig() {
 function findSoundPath(hookName, currentTheme) {
   const extensions = ['.aiff', '.mp3', '.wav'];
   
-  // Priority 1: Theme directory (by hook name)
+  // Only look in the current theme directory - no fallbacks
   const themeDir = path.join(themesBase, currentTheme);
   if (fs.existsSync(themeDir)) {
     for (const ext of extensions) {
@@ -70,28 +58,7 @@ function findSoundPath(hookName, currentTheme) {
     }
   }
   
-  // Priority 2: System theme directory (cross-platform fallback)
-  const systemDir = path.join(themesBase, 'system');
-  if (fs.existsSync(systemDir)) {
-    for (const ext of extensions) {
-      const systemPath = path.join(systemDir, hookName + ext);
-      if (fs.existsSync(systemPath)) {
-        return systemPath;
-      }
-    }
-  }
-  
-  // Priority 3: macOS system sounds (macOS only)
-  if (isMacOS) {
-    const systemSoundFile = macOSSystemSounds[hookName];
-    if (systemSoundFile) {
-      const systemPath = path.join(systemSounds, systemSoundFile);
-      if (fs.existsSync(systemPath)) {
-        return systemPath;
-      }
-    }
-  }
-  
+  // No sound found - return null (fail silently)
   return null;
 }
 
