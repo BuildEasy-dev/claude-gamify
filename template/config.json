@@ -1,5 +1,14 @@
 {
   "theme": "zelda",
   "sound_enabled": true,
-  "sound_volume": 0.5
+  "sound_volume": 0.5,
+  "sound_hooks": {
+    "session_start": true,
+    "user_prompt_submit": true,
+    "pre_tool_use": true,
+    "post_tool_use": true,
+    "notification": true,
+    "stop": true,
+    "subagent_stop": true
+  }
 }
