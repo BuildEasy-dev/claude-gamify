@@ -22,6 +22,17 @@ const themesBase = path.join(homeDir, '.claude-gamify', 'themes');
 const isMacOS = process.platform === 'darwin';
 const isLinux = process.platform === 'linux';
 
+// Hook event name mapping
+const HOOK_EVENT_MAPPING = {
+  'SessionStart': 'session_start',
+  'UserPromptSubmit': 'user_prompt_submit',
+  'PreToolUse': 'pre_tool_use',
+  'PostToolUse': 'post_tool_use',
+  'Notification': 'notification',
+  'Stop': 'stop',
+  'SubagentStop': 'subagent_stop'
+};
+
 /**
  * Load configuration from JSON file
  */
@@ -29,16 +40,49 @@ function loadConfig() {
   const defaultConfig = {
     theme: 'system',
     sound_enabled: true,
-    sound_volume: 0.5
+    sound_volume: 0.5,
+    sound_hooks: {
+      session_start: true,
+      user_prompt_submit: true,
+      pre_tool_use: true,
+      post_tool_use: true,
+      notification: true,
+      stop: true,
+      subagent_stop: true
+    }
   };
   
   try {
     const jsonConfig = JSON.parse(fs.readFileSync(configFile, 'utf8'));
-    return { ...defaultConfig, ...jsonConfig };
+    // Merge with defaults to handle missing sound_hooks
+    const config = { ...defaultConfig, ...jsonConfig };
+    if (jsonConfig.sound_hooks) {
+      config.sound_hooks = { ...defaultConfig.sound_hooks, ...jsonConfig.sound_hooks };
+    }
+    return config;
   } catch (error) {
     // Return defaults if config doesn't exist
     return defaultConfig;
   }
+}
+
+/**
+ * Check if sound should play for this hook
+ */
+function shouldPlaySound(hookName, config) {
+  // Check global enabled state
+  if (!config.sound_enabled) return false;
+  
+  // Check volume
+  if (config.sound_volume <= 0) return false;
+  
+  // Check individual hook state
+  const configKey = HOOK_EVENT_MAPPING[hookName] || hookName.toLowerCase();
+  if (config.sound_hooks && configKey in config.sound_hooks) {
+    return config.sound_hooks[configKey];
+  }
+  
+  return true; // Default to enabled
 }
 
 /**
@@ -131,8 +175,8 @@ function main() {
   
   const config = loadConfig();
   
-  // Exit silently if sounds disabled
-  if (!config.sound_enabled) {
+  // Check if sound should play for this specific hook
+  if (!shouldPlaySound(hookName, config)) {
     process.exit(0);
   }
   
