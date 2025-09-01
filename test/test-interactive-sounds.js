@@ -29,7 +29,7 @@ async function testInteractiveSounds() {
     
     // Test 2: Check component exists
     console.log('\n📋 Test 2: Interactive component validation');
-    const componentsContent = await readFile('./lib/ui/components/sound/InteractiveTestSoundsDisplay.js', 'utf8');
+    const componentsContent = await readFile('./lib/ui/components/sound-interactive-test-display.js', 'utf8');
     
     const hasInteractiveDisplay = componentsContent.includes('InteractiveTestSoundsDisplay');
     const hasRenderMethod = componentsContent.includes('static render(config, hookStates, soundItems, currentIndex, playingSound');
