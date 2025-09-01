@@ -5,7 +5,7 @@
  * Tests the actual components working together
  */
 
-import { InteractiveTestSoundsDisplay } from '../lib/ui/components.js';
+import { InteractiveTestSoundsDisplay } from '../lib/ui/components/index.js';
 import { HOOK_NAMES } from '../lib/ui/constants.js';
 
 async function testIntegration() {
