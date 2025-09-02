@@ -6,7 +6,7 @@
  */
 
 import { InteractiveTestSoundsDisplay } from '../lib/ui/components/index.js';
-import { HOOK_NAMES } from '../lib/ui/constants.js';
+import { HOOK_NAMES } from '../lib/ui/constants/index.js';
 
 async function testIntegration() {
   console.log('🧪 Integration Test for Interactive Sound Testing\n');
