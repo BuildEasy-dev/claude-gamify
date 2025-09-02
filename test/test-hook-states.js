@@ -8,7 +8,7 @@
 import path from 'path';
 import os from 'os';
 import { ClaudeSound } from '../lib/orchestrator.js';
-import { HOOK_NAMES } from '../lib/ui/constants.js';
+import { HOOK_NAMES } from '../lib/ui/constants/index.js';
 
 const SUCCESS = '✅';
 const FAILED = '❌';

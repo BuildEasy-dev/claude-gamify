@@ -14,8 +14,8 @@ import { dirname, join } from 'path';
 // Import CLI modules
 import { CommandHandlers } from '../lib/cli/commands.js';
 import { InteractiveMode } from '../lib/cli/session.js';
-import { MenuNavigator } from '../lib/ui/prompts.js';
-import { MESSAGES, COMMAND_DESCRIPTIONS } from '../lib/ui/constants.js';
+import { MenuNavigator } from '../lib/ui/prompts/index.js';
+import { MESSAGES, COMMAND_DESCRIPTIONS } from '../lib/ui/constants/index.js';
 
 // Package information
 const __filename = fileURLToPath(import.meta.url);

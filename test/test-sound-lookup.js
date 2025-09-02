@@ -9,7 +9,7 @@ import { execSync } from 'child_process';
 import { existsSync, readFileSync } from 'fs';
 import path from 'path';
 import { homedir } from 'os';
-import { HOOK_NAMES } from '../lib/ui/constants.js';
+import { HOOK_NAMES } from '../lib/ui/constants/index.js';
 
 // Hook event mapping from play_sound.js
 const HOOK_EVENT_MAPPING = {
