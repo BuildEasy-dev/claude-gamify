@@ -18,13 +18,13 @@
   "homepage": "https://github.com/buildeasy-dev/claude-gamify#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/buildeasy-dev/claude-gamify.git"
+    "url": "git+https://github.com/buildeasy-dev/claude-gamify.git"
   },
   "bugs": {
     "url": "https://github.com/buildeasy-dev/claude-gamify/issues"
   },
   "bin": {
-    "claude-gamify": "./bin/cli.js"
+    "claude-gamify": "bin/cli.js"
   },
   "files": [
     "bin/",
